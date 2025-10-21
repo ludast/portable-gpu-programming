@@ -12,6 +12,7 @@ In order to use OpenMP offloading targeting AMD GPUs, execute the following modu
 module load LUMI/24.03  #  or "ml LUMI/24.03", shorthand for "module load"
 module load partition/G
 module load rocm/6.0.3
+module load PrgEnv-cray/8.5.0
 ```
 Verify the module environment with
 ```
