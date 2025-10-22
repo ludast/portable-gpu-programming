@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
   //# Define vectors for matrices
   const int nx=N, ny=N;
   const int niter=100;
-  const float factor =0.25;
+  const float factor =0.001;
   std::vector<float> matrix_u(nx*ny);
   std::vector<float> matrix_unew(nx*ny);
 
@@ -109,27 +109,49 @@ int main(int argc, char *argv[]) {
   auto start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
   double kernel_duration = 0;
 
+  // Use nd_range to define global and local work sizes
+  range<2> local_size(M, M);
+  range<2> global_size(((nx + M - 1)/M)*M, ((ny + M - 1)/M)*M);
+  nd_range<2> r(global_size, local_size);
+
   for(int iter=0;iter<niter; iter++)
   {
     {
       //# Submit command groups to execute on device
       auto e = q.submit([&](handler &h){
 
-          range<2> global_size(nx,ny);
+          // local accessor for local memory allocation
+          local_accessor<float, 2> tile(range<2>(M+2, M+2), h);
 
-          h.parallel_for(range<2>(nx,ny), [=](id<2> item){
-              const int i = item[0];
-              const int j = item[1];
+          // the kernel launch is done using the nd_range
+          h.parallel_for(r, [=](nd_item<2> item){
 
-              int ind = i * ny + j;
-              int ip = (i + 1) * ny + j;
-              int im = (i - 1) * ny + j;
-              int jp = i * ny + j + 1;
-              int jm = i * ny + j - 1;
-              if(i>0 && i<nx-1 && j>0 && j< ny-1){
-              UNEW[ind] = factor * (U[ip] - 2.0 * U[ind] + U[im] +
-                  U[jp] - 2.0 * U[ind] + U[jm]);
+              // both local and global indeces can be obtained from the nd_item:
+              int global_i = item.get_global_id(0);
+              int global_j = item.get_global_id(1);
+              int local_i  = item.get_local_id(0) + 1;
+              int local_j  = item.get_local_id(1) + 1;
+
+              if(global_i < nx && global_j < ny)
+              tile[local_i][local_j] = U[global_i * ny + global_j];
+
+              if(item.get_local_id(0) == 0 && global_i > 0)
+              tile[0][local_j] = U[(global_i-1)*ny + global_j];
+              if(item.get_local_id(0) == local_size[0]-1 && global_i < nx-1)
+              tile[M+1][local_j] = U[(global_i+1)*ny + global_j];
+              if(item.get_local_id(1) == 0 && global_j > 0)
+              tile[local_i][0] = U[global_i*ny + global_j-1];
+              if(item.get_local_id(1) == local_size[1]-1 && global_j < ny-1)
+              tile[local_i][M+1] = U[global_i*ny + global_j+1];
+
+              item.barrier(access::fence_space::local_space);
+
+              if(global_i > 0 && global_i < nx-1 && global_j > 0 && global_j < ny-1){
+                UNEW[global_i * ny + global_j] =
+                  factor * (tile[local_i+1][local_j] - 2.0f * tile[local_i][local_j] + tile[local_i-1][local_j] +
+                      tile[local_i][local_j+1] - 2.0f * tile[local_i][local_j] + tile[local_i][local_j-1]);
               }
+
               });
       });
 
