@@ -13,24 +13,32 @@ The slides are available [here](https://csc-training.github.io/portable-gpu-prog
 
 | Time         | Topic |
 | ----         | ----- |
-| 09:15-09:30  | Welcome
-| 09:15-09:50  | Parallel Computing & GPUs
+| 09:00-09:15  | Welcome
+| 09:15-09:45  | Parallel Computing & Supercomputers
 | 09:50-10:00  | Intro & GPU execution model
 | 10:00-10:20  | GPU memory hierarchy
 | 10:40-12:00  | Mahti and LUMI  Computing Platforms & Profiling
 | 12:00-13:00  | Lunch break
 | 13:00-14:10  | Refresher of C++
-| 14:30-16:30  | MPI basics
+| 14:30-15:20  | MPI basics
+| 15:20-16:30  | Break and Exercises
 | 16:30-16:45  | Day 1 wrap-up
 
 ### Day 2, Wednesday 22.10
 
 | Time         | Topic |
 | ----         | ----- |
-| 09:15-12:00  | SYCL I (with exercises)
+| 09:15-09:30  | Introduction to SYCL
+| 09:30-10:00  | Simple SYCL
+| 10:25-11:00  | SYCL Exercises 
+| 11:00-11:20  | Advanced SYCL
+| 11:20-12:00  | SYCL Exercises 
 | 12:00-13:00  | Lunch break
-| 13:00-15:00  | SYCL II (with exercises)
-| 15:00-16:30  | SYCL III (with exercises)
+| 13:00-13:30  | Other SYCL Features
+| 13:30-14:00  | SYCL Exercises
+| 14:00-15:00  | Memory Optimizations
+| 15:00-15:45  | SYCL and MPI 
+| 15:45-16:30  | Interoperability
 | 16:30-16:45  | Day 2 wrap-up
 
 ### Day 3, Thursday 23.10

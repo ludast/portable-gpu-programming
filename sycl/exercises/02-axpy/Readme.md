@@ -30,7 +30,7 @@ Alternatively it is possible to use the procedure from the [previous exercise](.
 Create buffers to encapsulate the data. For a one-dimensional array of integers of length `N`, with pointer `P`, a buffer can be constructed as follows:
 
 ```cpp
-    sycl::buffer<int, 1> x_buf(P, sycl::range<1>(N));
+    sycl::buffer<int, 1> x_buf(P.data, sycl::range<1>(N));
 ```
 Use the appropriate data type. 
 
@@ -165,7 +165,7 @@ Start from the skeleton [`axpy.cpp`](axpy.cpp), the solution of [Task III](solut
 
 Declare new pointers using `malloc_shared()` such as:
 ```cpp
-    int* x_shared = sycl::malloc_device<int>(N, q);
+    int* x_shared = sycl::malloc_shared<int>(N, q);
 ```
 Then initialize the `x_shared` and `y_shared` using host. 
 
@@ -222,7 +222,7 @@ or
  ```cpp
     auto event_axpy=q.parallel_for(range{N},{event_x, event_y}, [=](id<1> idx) { Y[idx] += a * X[idx]; });
 ```
-When using `malloc_device()` a CPU to GPU tranfer is needed. This as well can depend on specific events:
+When using `malloc_device()` a GPU to CPU tranfer is needed. This as well can depend on specific events:
 ```
 auto memcpy_event = q.submit([&](handler& h) {
   h.depends_on(event_axpy);   // Make memcpy wait for event_axpy

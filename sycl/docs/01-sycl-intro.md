@@ -1,6 +1,6 @@
 ---
 title:    Introduction to SYCL
-subtitle: Portable GPU Programming
+event: Portable GPU Programming
 date:     October 2025
 lang:     en
 ---
@@ -61,9 +61,9 @@ lang:     en
 
 # Summary
 
- - single, high-level, standard C++  programming model 
+ - single source, high-level, standard C++  programming model 
  - can target various heterogenous platforms in a single application
-     - CPUs, GPUs (Intel, Nvidia, AMD), FPGAs, ...
+     - CPUs, GPUs (Intel, ~~Nvidia, AMD~~), FPGAs, ...
  - 3P: **Portability**, **Productivity**, **Performance**
  - SYCL implementations, specific adaptions 
  - SYCL on Mahti and LUMI: AdaptiveCpp
