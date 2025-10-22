@@ -81,15 +81,8 @@ int main(int argc, char *argv[]) {
   q.wait();
 
   {
-    //# Create buffers for matrices
-    //buffer<float, 1> u(matrix_u.data(), range<1>(nx*ny));
-    //buffer<float, 1> unew(matrix_unew.data(), range<1>(nx*ny));
-
     //# Submit command groups to execute on device
     q.submit([&](handler &h){
-
-        //accessor U(u, h, sycl::read_only);
-        //accessor UNEW(unew, h, sycl::write_only);
 
         range<2> global_size(nx,ny);
 
@@ -114,19 +107,13 @@ int main(int argc, char *argv[]) {
   std::cout << "Warm up done!  \n";
 
   auto start = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+  double kernel_duration = 0;
 
   for(int iter=0;iter<niter; iter++)
   {
     {
-      //# DONE Create buffers for matrices
-      //buffer<float, 1> u(matrix_u.data(), range<1>(nx*ny));
-      //buffer<float, 1> unew(matrix_unew.data(), range<1>(nx*ny));
-
       //# Submit command groups to execute on device
-      q.submit([&](handler &h){
-          //# DONE Create accessors to copy buffers to the device
-          //auto U = accessor(u, h, sycl::read_only);
-          //auto UNEW = accessor(unew, h, sycl::write_only);
+      auto e = q.submit([&](handler &h){
 
           range<2> global_size(nx,ny);
 
@@ -144,39 +131,18 @@ int main(int argc, char *argv[]) {
                   U[jp] - 2.0 * U[ind] + U[jm]);
               }
               });
-      }).wait(); // Wait for kernel to finish
-    }
+      });
 
-    {
-      //# DONE Create buffers for matrices
-      //buffer<float, 1> u(matrix_u.data(), range<1>(nx*ny));
-      //buffer<float, 1> unew(matrix_unew.data(), range<1>(nx*ny));
+      e.wait(); // Wait for kernel to finish
 
-      //# Submit command groups to execute on device
-      q.submit([&](handler &h){
-          //# DONE Create accessors to copy buffers to the device
-          //auto U = accessor(unew, h, sycl::read_only);
-          //auto UNEW = accessor(u, h, sycl::write_only);
+      // event duration
+      kernel_duration += (e.get_profiling_info<info::event_profiling::command_end>() - e.get_profiling_info<info::event_profiling::command_start>());
 
-          range<2> global_size(nx,ny);
+      // Swap pointers
+      std::swap(U, UNEW);
 
-          h.parallel_for(range<2>(nx,ny), [=](id<2> item){
-              const int i = item[0];
-              const int j = item[1];
-
-              int ind = i * ny + j;
-              int ip = (i + 1) * ny + j;
-              int im = (i - 1) * ny + j;
-              int jp = i * ny + j + 1;
-              int jm = i * ny + j - 1;
-              if(i>0 && i<nx-1 && j>0 && j< ny-1){
-              UNEW[ind] = factor * (U[ip] - 2.0 * U[ind] + U[im] +
-                  U[jp] - 2.0 * U[ind] + U[jm]);
-              }
-              });
-      }).wait(); // Wait for kernel to finish
-    }
-  }
+    } // end submit
+  } // end jacobi for-loop
 
   // copy result back to host
   q.memcpy(matrix_u.data(), U, sizeof(float) * nx * ny).wait();
@@ -188,6 +154,7 @@ int main(int argc, char *argv[]) {
 
   auto duration = std::chrono::high_resolution_clock::now().time_since_epoch().count() - start;
   std::cout << "Compute Duration      : " << duration / 1e+9 << " seconds\n";
+  std::cout << "Kernel Duration       : " << kernel_duration / 1e+9 << " seconds\n";
 
   //# Print Output
   if (PRINT_OUTPUT_MATRIX){
