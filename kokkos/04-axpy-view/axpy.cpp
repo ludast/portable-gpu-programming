@@ -81,9 +81,11 @@ int main(int argc, char** argv)
   const fp_type a = 0.5;
   constexpr size_t N = 100;
 
+  // Using raw pointers
   //fp_type *x = (fp_type *) malloc(N * sizeof(fp_type));
   //fp_type *y = (fp_type *) malloc(N * sizeof(fp_type));
 
+  {
   // Using Kokkos Views
   Kokkos::View<fp_type*, Kokkos::SharedSpace> x("x", N);
   Kokkos::View<fp_type*, Kokkos::SharedSpace> y("y", N);
@@ -115,6 +117,8 @@ int main(int argc, char** argv)
   // Check results
   std::cout << "First and last element (both should be zero):" << std::endl 
             << y[0] << "," << y[N-1] << std::endl;  
+
+  } // end scope for Kokkos Views (deallocation)
 
   Kokkos::finalize();
   return 0;
