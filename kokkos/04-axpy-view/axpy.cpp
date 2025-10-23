@@ -85,8 +85,8 @@ int main(int argc, char** argv)
   //fp_type *y = (fp_type *) malloc(N * sizeof(fp_type));
 
   // Using Kokkos Views
-  Kokkos::View<fp_type*> x("x", N);
-  Kokkos::View<fp_type*> y("y", N);
+  Kokkos::View<fp_type*, Kokkos::SharedSpace> x("x", N);
+  Kokkos::View<fp_type*, Kokkos::SharedSpace> y("y", N);
 
   // option 1: direct function call
   // init(x, y, N);
