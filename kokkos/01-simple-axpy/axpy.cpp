@@ -26,6 +26,7 @@ void kokkos_axpy(T1 x, T1 y, T2 a, size_t N)
   Kokkos::parallel_for("axpy", N, KOKKOS_LAMBDA(const size_t i) {
     y[i] += a * x[i];
   });
+  Kokkos::fence();
 }
 
 template <typename T>
@@ -35,6 +36,7 @@ void kokkos_init(T x, T y, size_t N)
     x[i] = (i + 1) * 2.4;
     y[i] = (i + 1) * -1.2;
   });
+  Kokkos::fence();
 }
 
 template <typename T1, typename T2>
